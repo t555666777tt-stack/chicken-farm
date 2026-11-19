@@ -1,0 +1,850 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Куриная ферма 4.0</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #263b50, transparent 45%), #101820;
+    color: #f1f5f9;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 28px 15px 15px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 34px;
+    color: #ffd166;
+}
+
+header p { color: #9eafc0; }
+
+.container {
+    max-width: 1050px;
+    margin: auto;
+    padding: 15px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.stat, .panel {
+    background: #1b2937;
+    border: 1px solid #34495e;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.stat { text-align: center; }
+
+.stat span {
+    display: block;
+    color: #a9bacb;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.stat strong {
+    font-size: 25px;
+    color: #ffd166;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 18px;
+}
+
+.panel h2 {
+    margin-top: 0;
+    color: #ffd166;
+}
+
+.farm {
+    text-align: center;
+    min-height: 330px;
+}
+
+.chicken {
+    font-size: 115px;
+    display: block;
+    margin: 25px 0;
+    pointer-events: none;
+    filter: drop-shadow(0 8px 12px #0007);
+}
+
+.collect-button {
+    display: inline-block;
+    color: #17212b;
+    background: linear-gradient(180deg, #ffe49a, #ffc44d);
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 16px 30px;
+    border-radius: 14px;
+    border: 2px solid #ffdc83;
+    box-shadow: 0 5px 0 #bd8426;
+    transition: transform .08s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.collect-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #bd8426;
+}
+
+.info {
+    color: #a9bacb;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.shop-item {
+    background: #263849;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #3b5268;
+}
+
+.shop-item h3 { margin: 0 0 7px; }
+
+.shop-item p {
+    color: #a9bacb;
+    font-size: 13px;
+    margin: 5px 0 12px;
+}
+
+.buy-button, .sell-button, .reset-button {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.buy-button {
+    width: 100%;
+    background: #3285c7;
+    color: white;
+}
+
+.buy-button:hover { background: #4c9ddd; }
+
+.buy-button:disabled, .sell-button:disabled {
+    background: #465565;
+    color: #9eabb8;
+    cursor: not-allowed;
+}
+
+.sell-button {
+    width: 100%;
+    background: #239b69;
+    color: white;
+}
+
+.sell-button:hover { background: #2cba80; }
+
+.progress-bg {
+    height: 13px;
+    background: #101820;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, #f6b73c, #ffe69b);
+    transition: width .3s;
+}
+
+.egg-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #263849;
+    border-radius: 10px;
+    padding: 11px;
+    margin: 8px 0;
+    gap: 8px;
+}
+
+.egg-name { font-size: 14px; }
+.egg-count { color: #ffd166; font-weight: bold; }
+
+.achievement {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 4px;
+    border-radius: 9px;
+    background: #263849;
+    color: #72879a;
+    font-size: 13px;
+}
+
+.achievement.unlocked {
+    background: #594b27;
+    color: #ffe29a;
+}
+
+.bottom {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.reset-button {
+    background: #8d3540;
+    color: white;
+}
+
+.message {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #ffd166;
+    color: #222;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: .3s;
+    z-index: 5;
+    text-align: center;
+    max-width: 90%;
+}
+
+.message.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.float {
+    position: fixed;
+    pointer-events: none;
+    font-size: 25px;
+    animation: fly .8s forwards;
+    z-index: 4;
+}
+
+@keyframes fly {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-90px) scale(1.5); }
+}
+
+@media(max-width: 650px) {
+    .main { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    header h1 { font-size: 27px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🐔 КУРИНАЯ ФЕРМА 4.0</h1>
+    <p>Разводи куриц, собирай редкие яйца и развивай империю!</p>
+</header>
+
+<div class="container">
+
+    <section class="stats">
+        <div class="stat">
+            <span>💰 Монеты</span>
+            <strong id="coins">0</strong>
+        </div>
+        <div class="stat">
+            <span>🥚 Все яйца</span>
+            <strong id="eggs">0</strong>
+        </div>
+        <div class="stat">
+            <span>⭐ Уровень</span>
+            <strong id="level">1</strong>
+        </div>
+    </section>
+
+    <div class="main">
+
+        <section class="panel farm">
+            <h2>Твоя ферма</h2>
+            <div class="chicken" id="mainChicken">🐔</div>
+
+            <button class="collect-button" id="collect" type="button">
+                СОБРАТЬ ЯЙЦА
+            </button>
+
+            <p class="info" id="powerInfo">За сбор: +1 яйцо</p>
+
+            <div class="progress-bg">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <p class="info" id="progressInfo"></p>
+        </section>
+
+        <section class="panel">
+            <h2>🥚 Твои яйца</h2>
+
+            <div class="egg-row">
+                <span class="egg-name">🥚 Обычные</span>
+                <strong class="egg-count" id="normalEggs">0</strong>
+            </div>
+
+            <div class="egg-row">
+                <span class="egg-name">🤎 Коричневые</span>
+                <strong class="egg-count" id="brownEggs">0</strong>
+            </div>
+
+            <div class="egg-row">
+                <span class="egg-name">✨ Золотые</span>
+                <strong class="egg-count" id="goldEggs">0</strong>
+            </div>
+
+            <div class="egg-row">
+                <span class="egg-name">💎 Алмазные</span>
+                <strong class="egg-count" id="diamondEggs">0</strong>
+            </div>
+
+            <div class="shop-item">
+                <h3>💰 Продажа яиц</h3>
+                <p id="sellInfo">Стоимость всех яиц: 0 монет</p>
+                <button class="sell-button" id="sell">
+                    ПРОДАТЬ ВСЕ ЯЙЦА
+                </button>
+            </div>
+
+            <div class="shop-item">
+                <h3>📈 Цена продажи</h3>
+                <p id="priceInfo"></p>
+                <button class="buy-button" id="upgradePrice"></button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>🐔 Магазин куриц</h2>
+
+            <div class="shop-item">
+                <h3>🐔 Обычная курица</h3>
+                <p>Производит 1 обычное яйцо каждую секунду.</p>
+                <p id="normalCount"></p>
+                <button class="buy-button" id="buyNormal"></button>
+            </div>
+
+            <div class="shop-item">
+                <h3>🐓 Быстрая курица</h3>
+                <p>Производит 1 коричневое яйцо каждую секунду.</p>
+                <p id="brownCount"></p>
+                <button class="buy-button" id="buyBrown"></button>
+            </div>
+
+            <div class="shop-item">
+                <h3>✨ Золотая курица</h3>
+                <p>Производит 1 золотое яйцо каждую секунду.</p>
+                <p id="goldCount"></p>
+                <button class="buy-button" id="buyGold"></button>
+            </div>
+
+            <div class="shop-item">
+                <h3>💎 Алмазная курица</h3>
+                <p>Производит 1 алмазное яйцо каждую секунду.</p>
+                <p id="diamondCount"></p>
+                <button class="buy-button" id="buyDiamond"></button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>🛠️ Улучшения</h2>
+
+            <div class="shop-item">
+                <h3>💪 Сильный клюв</h3>
+                <p>Увеличивает количество обычных яиц за сбор.</p>
+                <button class="buy-button" id="buyClick"></button>
+            </div>
+
+            <div class="shop-item">
+                <h3>🏠 Курятник</h3>
+                <p>Производит обычные яйца автоматически.</p>
+                <button class="buy-button" id="buyCoop"></button>
+            </div>
+
+            <p class="info" id="incomeInfo"></p>
+        </section>
+
+    </div>
+
+    <section class="panel achievements">
+        <h2>🏆 Достижения</h2>
+        <div id="achievementList"></div>
+    </section>
+
+    <div class="bottom">
+        <span class="info">Игра сохраняется автоматически</span>
+        <button class="reset-button" id="reset">Сбросить игру</button>
+    </div>
+
+</div>
+
+<div class="message" id="message"></div>
+
+<script>
+const SAVE_KEY = "chickenFarmSave";
+
+let coins = 0;
+let totalEggs = 0;
+
+let eggs = 0;
+let brownEggs = 0;
+let goldEggs = 0;
+let diamondEggs = 0;
+
+let clickPower = 1;
+let clickLevel = 0;
+
+let coopLevel = 0;
+
+let normalChickens = 0;
+let brownChickens = 0;
+let goldChickens = 0;
+let diamondChickens = 0;
+
+let clickCost = 20;
+let coopCost = 50;
+
+let normalCost = 100;
+let brownCost = 350;
+let goldCost = 1000;
+let diamondCost = 3000;
+
+let sellPrice = 1;
+let priceUpgradeCost = 100;
+
+let messageTimer;
+
+function saveGame() {
+    const save = {
+        coins, totalEggs,
+        eggs, brownEggs, goldEggs, diamondEggs,
+        clickPower, clickLevel, coopLevel,
+        normalChickens, brownChickens,
+        goldChickens, diamondChickens,
+        clickCost, coopCost,
+        normalCost, brownCost, goldCost, diamondCost,
+        sellPrice, priceUpgradeCost
+    };
+
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+}
+
+function loadGame() {
+    try {
+        const data = JSON.parse(localStorage.getItem(SAVE_KEY));
+
+        if (!data || typeof data !== "object") return;
+
+        coins = Math.max(0, Number(data.coins) || 0);
+        totalEggs = Math.max(0, Number(data.totalEggs) || 0);
+
+        eggs = Math.max(0, Number(data.eggs) || 0);
+        brownEggs = Math.max(0, Number(data.brownEggs) || 0);
+        goldEggs = Math.max(0, Number(data.goldEggs) || 0);
+        diamondEggs = Math.max(0, Number(data.diamondEggs) || 0);
+
+        clickPower = Math.max(1, Number(data.clickPower) || 1);
+        clickLevel = Math.max(0, Number(data.clickLevel) || 0);
+        coopLevel = Math.max(0, Number(data.coopLevel) || 0);
+
+        normalChickens = Math.max(0, Number(data.normalChickens) || 0);
+        brownChickens = Math.max(0, Number(data.brownChickens) || 0);
+        goldChickens = Math.max(0, Number(data.goldChickens) || 0);
+        diamondChickens = Math.max(0, Number(data.diamondChickens) || 0);
+
+        clickCost = Math.max(20, Number(data.clickCost) || 20);
+        coopCost = Math.max(50, Number(data.coopCost) || 50);
+
+        normalCost = Math.max(100, Number(data.normalCost) || 100);
+        brownCost = Math.max(350, Number(data.brownCost) || 350);
+        goldCost = Math.max(1000, Number(data.goldCost) || 1000);
+        diamondCost = Math.max(3000, Number(data.diamondCost) || 3000);
+
+        sellPrice = Math.max(1, Number(data.sellPrice) || 1);
+        priceUpgradeCost = Math.max(100, Number(data.priceUpgradeCost) || 100);
+
+        // Совместимость со старой золотой курицей из предыдущей версии
+        if (data.golden === true && goldChickens === 0) {
+            clickPower = Math.max(clickPower, 5);
+        }
+
+    } catch (error) {
+        console.log("Ошибка загрузки сохранения:", error);
+    }
+}
+
+function showMessage(text) {
+    const box = document.getElementById("message");
+    box.textContent = text;
+    box.classList.add("show");
+
+    clearTimeout(messageTimer);
+
+    messageTimer = setTimeout(() => {
+        box.classList.remove("show");
+    }, 1800);
+}
+
+function animateEmoji(emoji) {
+    const element = document.createElement("div");
+    element.className = "float";
+    element.textContent = emoji;
+    element.style.left = (35 + Math.random() * 30) + "vw";
+    element.style.top = (35 + Math.random() * 25) + "vh";
+
+    document.body.appendChild(element);
+    setTimeout(() => element.remove(), 800);
+}
+
+function getLevel() {
+    return Math.floor(totalEggs / 100) + 1;
+}
+
+function getTotalEggs() {
+    return eggs + brownEggs + goldEggs + diamondEggs;
+}
+
+function getSaleValue() {
+    return (
+        eggs * sellPrice +
+        brownEggs * 2 * sellPrice +
+        goldEggs * 5 * sellPrice +
+        diamondEggs * 12 * sellPrice
+    );
+}
+
+function update() {
+    const progress = totalEggs % 100;
+
+    document.getElementById("coins").textContent =
+        Math.floor(coins).toLocaleString("ru-RU");
+
+    document.getElementById("eggs").textContent =
+        getTotalEggs().toLocaleString("ru-RU");
+
+    document.getElementById("level").textContent = getLevel();
+
+    document.getElementById("normalEggs").textContent =
+        eggs.toLocaleString("ru-RU");
+
+    document.getElementById("brownEggs").textContent =
+        brownEggs.toLocaleString("ru-RU");
+
+    document.getElementById("goldEggs").textContent =
+        goldEggs.toLocaleString("ru-RU");
+
+    document.getElementById("diamondEggs").textContent =
+        diamondEggs.toLocaleString("ru-RU");
+
+    document.getElementById("progress").style.width =
+        progress + "%";
+
+    document.getElementById("progressInfo").textContent =
+        "До следующего уровня: " + (100 - progress) + " яиц";
+
+    document.getElementById("powerInfo").textContent =
+        "За сбор: +" + clickPower + " обычных яиц";
+
+    document.getElementById("sellInfo").textContent =
+        "За все яйца ты получишь " +
+        getSaleValue().toLocaleString("ru-RU") + " монет.";
+
+    document.getElementById("priceInfo").textContent =
+        "Множитель цены: x" + sellPrice +
+        ". Улучшение увеличит его на 1.";
+
+    document.getElementById("normalCount").textContent =
+        "На ферме: " + normalChickens + " шт.";
+
+    document.getElementById("brownCount").textContent =
+        "На ферме: " + brownChickens + " шт.";
+
+    document.getElementById("goldCount").textContent =
+        "На ферме: " + goldChickens + " шт.";
+
+    document.getElementById("diamondCount").textContent =
+        "На ферме: " + diamondChickens + " шт.";
+
+    document.getElementById("buyNormal").textContent =
+        "Купить за " + normalCost + " монет";
+
+    document.getElementById("buyBrown").textContent =
+        "Купить за " + brownCost + " монет";
+
+    document.getElementById("buyGold").textContent =
+        "Купить за " + goldCost + " монет";
+
+    document.getElementById("buyDiamond").textContent =
+        "Купить за " + diamondCost + " монет";
+
+    document.getElementById("buyClick").textContent =
+        "Купить за " + clickCost + " монет • Уровень " + clickLevel;
+
+    document.getElementById("buyCoop").textContent =
+        "Купить за " + coopCost + " монет • Уровень " + coopLevel;
+
+    document.getElementById("upgradePrice").textContent =
+        "Улучшить за " + priceUpgradeCost + " монет";
+
+    document.getElementById("buyNormal").disabled = coins < normalCost;
+    document.getElementById("buyBrown").disabled = coins < brownCost;
+    document.getElementById("buyGold").disabled = coins < goldCost;
+    document.getElementById("buyDiamond").disabled = coins < diamondCost;
+
+    document.getElementById("buyClick").disabled = coins < clickCost;
+    document.getElementById("buyCoop").disabled = coins < coopCost;
+    document.getElementById("upgradePrice").disabled = coins < priceUpgradeCost;
+    document.getElementById("sell").disabled = getTotalEggs() <= 0;
+
+    document.getElementById("incomeInfo").textContent =
+        "Производство за секунду: " +
+        (coopLevel + normalChickens) + " обычных, " +
+        brownChickens + " коричневых, " +
+        goldChickens + " золотых, " +
+        diamondChickens + " алмазных яиц.";
+
+    updateAchievements();
+}
+
+function collect() {
+    eggs += clickPower;
+    totalEggs += clickPower;
+
+    animateEmoji("🥚");
+    update();
+    saveGame();
+}
+
+function sellEggs() {
+    const amount = getSaleValue();
+
+    if (amount <= 0) {
+        showMessage("У тебя пока нет яиц!");
+        return;
+    }
+
+    coins += amount;
+
+    eggs = 0;
+    brownEggs = 0;
+    goldEggs = 0;
+    diamondEggs = 0;
+
+    showMessage("Продано! +" + amount + " монет 💰");
+
+    update();
+    saveGame();
+}
+
+function upgradePrice() {
+    if (coins < priceUpgradeCost) return;
+
+    coins -= priceUpgradeCost;
+    sellPrice++;
+
+    priceUpgradeCost = Math.ceil(priceUpgradeCost * 2);
+
+    showMessage("Цена всех яиц увеличена! 📈");
+
+    update();
+    saveGame();
+}
+
+function buyClick() {
+    if (coins < clickCost) return;
+
+    coins -= clickCost;
+    clickPower++;
+    clickLevel++;
+
+    clickCost = Math.ceil(clickCost * 1.7);
+
+    showMessage("Сбор улучшен! 💪");
+
+    update();
+    saveGame();
+}
+
+function buyCoop() {
+    if (coins < coopCost) return;
+
+    coins -= coopCost;
+    coopLevel++;
+
+    coopCost = Math.ceil(coopCost * 1.8);
+
+    showMessage("Курятник построен! 🏠");
+
+    update();
+    saveGame();
+}
+
+function buyChicken(type) {
+    const prices = {
+        normal: normalCost,
+        brown: brownCost,
+        gold: goldCost,
+        diamond: diamondCost
+    };
+
+    const price = prices[type];
+
+    if (coins < price) return;
+
+    coins -= price;
+
+    if (type === "normal") {
+        normalChickens++;
+        normalCost = Math.ceil(normalCost * 1.5);
+    }
+
+    if (type === "brown") {
+        brownChickens++;
+        brownCost = Math.ceil(brownCost * 1.55);
+    }
+
+    if (type === "gold") {
+        goldChickens++;
+        goldCost = Math.ceil(goldCost * 1.6);
+    }
+
+    if (type === "diamond") {
+        diamondChickens++;
+        diamondCost = Math.ceil(diamondCost * 1.7);
+    }
+
+    showMessage("Новая курица на ферме! 🐔");
+
+    update();
+    saveGame();
+}
+
+function updateAchievements() {
+    const achievements = [
+        { name: "🥚 Первое яйцо", done: totalEggs >= 1 },
+        { name: "🐣 100 яиц", done: totalEggs >= 100 },
+        { name: "🏠 Первый курятник", done: coopLevel >= 1 },
+        { name: "🐔 Первая обычная курица", done: normalChickens >= 1 },
+        { name: "🤎 Коричневая курица", done: brownChickens >= 1 },
+        { name: "✨ Золотая курица", done: goldChickens >= 1 },
+        { name: "💎 Алмазная курица", done: diamondChickens >= 1 },
+        { name: "👑 1000 яиц", done: totalEggs >= 1000 }
+    ];
+
+    document.getElementById("achievementList").innerHTML =
+        achievements.map(item =>
+            '<span class="achievement ' +
+            (item.done ? "unlocked" : "") +
+            '">' + item.name + "</span>"
+        ).join("");
+}
+
+function resetGame() {
+    if (!confirm("Точно сбросить весь прогресс?")) return;
+
+    localStorage.removeItem(SAVE_KEY);
+
+    coins = 0;
+    totalEggs = 0;
+
+    eggs = 0;
+    brownEggs = 0;
+    goldEggs = 0;
+    diamondEggs = 0;
+
+    clickPower = 1;
+    clickLevel = 0;
+    coopLevel = 0;
+
+    normalChickens = 0;
+    brownChickens = 0;
+    goldChickens = 0;
+    diamondChickens = 0;
+
+    clickCost = 20;
+    coopCost = 50;
+
+    normalCost = 100;
+    brownCost = 350;
+    goldCost = 1000;
+    diamondCost = 3000;
+
+    sellPrice = 1;
+    priceUpgradeCost = 100;
+
+    update();
+    showMessage("Ферма полностью сброшена!");
+}
+
+document.getElementById("collect").addEventListener("click", collect);
+document.getElementById("sell").addEventListener("click", sellEggs);
+document.getElementById("upgradePrice").addEventListener("click", upgradePrice);
+
+document.getElementById("buyClick").addEventListener("click", buyClick);
+document.getElementById("buyCoop").addEventListener("click", buyCoop);
+
+document.getElementById("buyNormal").addEventListener("click", () => buyChicken("normal"));
+document.getElementById("buyBrown").addEventListener("click", () => buyChicken("brown"));
+document.getElementById("buyGold").addEventListener("click", () => buyChicken("gold"));
+document.getElementById("buyDiamond").addEventListener("click", () => buyChicken("diamond"));
+
+document.getElementById("reset").addEventListener("click", resetGame);
+
+loadGame();
+update();
+
+setInterval(function() {
+    const normalIncome = coopLevel + normalChickens;
+
+    eggs += normalIncome;
+    brownEggs += brownChickens;
+    goldEggs += goldChickens;
+    diamondEggs += diamondChickens;
+
+    const income =
+        normalIncome + brownChickens + goldChickens + diamondChickens;
+
+    if (income > 0) {
+        totalEggs += income;
+        update();
+        saveGame();
+    }
+}, 1000);
+
+setInterval(saveGame, 5000);
+</script>
+
+</body>
+</html>
